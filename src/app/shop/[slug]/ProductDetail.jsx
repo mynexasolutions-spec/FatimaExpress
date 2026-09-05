@@ -25,6 +25,18 @@ export default function ProductDetail({ product, related, reviews = [], existing
   const [qty, setQty] = useState(1);
   const [imageIndex, setImageIndex] = useState(0);
 
+  const variantStock = product.variantStock ?? [];
+  const hasVariantTracking = variantStock.length > 0;
+  const findStock = (sizeLabel, colorName) => {
+    const entry = variantStock.find((v) => (v.size || null) === (sizeLabel || null) && (v.color || null) === (colorName || null));
+    return entry ? Number(entry.stock) || 0 : 0;
+  };
+  const sizeKeyForStock = product.sizes?.length ? size?.label ?? null : null;
+  const colorKeyForStock = colorOptions.length ? color ?? null : null;
+  const selectedStock = hasVariantTracking ? findStock(sizeKeyForStock, colorKeyForStock) : null;
+  const outOfStock = hasVariantTracking && selectedStock <= 0;
+  const maxQty = hasVariantTracking ? Math.max(0, selectedStock) : Infinity;
+
   const selectedColor = colorOptions.find((c) => c.name === color) ?? null;
   const visual = { ...product.visual, color: selectedColor?.hex ?? product.visual.color };
   const galleryImages = selectedColor?.images?.length
@@ -39,6 +51,12 @@ export default function ProductDetail({ product, related, reviews = [], existing
   const selectColor = (name) => {
     setColor(name);
     setImageIndex(0);
+    setQty(1);
+  };
+
+  const selectSize = (option) => {
+    setSize(option);
+    setQty(1);
   };
 
   const bulkTiers = sortedTiers(product.bulkPricing);
@@ -122,10 +140,17 @@ export default function ProductDetail({ product, related, reviews = [], existing
             <span className="text-xs sm:text-sm lg:text-base font-bold uppercase tracking-widest text-[#7E22CE]">
               {product.category.replace(/-/g, " ")}
             </span>
-            <span className="inline-flex items-center gap-2 text-xs sm:text-sm lg:text-base font-bold text-emerald-700 bg-emerald-50 px-3.5 py-1.5 rounded-full border border-emerald-200/80">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              In Stock — UAE Express Dispatch
-            </span>
+            {outOfStock ? (
+              <span className="inline-flex items-center gap-2 text-xs sm:text-sm lg:text-base font-bold text-red-700 bg-red-50 px-3.5 py-1.5 rounded-full border border-red-200/80">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500 shrink-0" />
+                Out of Stock
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-2 text-xs sm:text-sm lg:text-base font-bold text-emerald-700 bg-emerald-50 px-3.5 py-1.5 rounded-full border border-emerald-200/80">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                {hasVariantTracking && selectedStock <= 10 ? `Only ${selectedStock} left` : "In Stock"} — UAE Express Dispatch
+              </span>
+            )}
           </div>
 
           {/* Product Title */}
@@ -223,11 +248,11 @@ export default function ProductDetail({ product, related, reviews = [], existing
           <div className="mt-6">
             <label className="block text-xs sm:text-sm lg:text-base font-bold uppercase tracking-wider text-slate-700">Select Size Option</label>
             <div className="mt-2.5 flex flex-wrap gap-2.5 sm:gap-3">
-              {sizeOptions.map((option) => (
+              {sizeOptions.map((option, idx) => (
                 <button
-                  key={option.label}
+                  key={`${option.label}-${idx}`}
                   type="button"
-                  onClick={() => setSize(option)}
+                  onClick={() => selectSize(option)}
                   className={`rounded-xl border-2 px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 text-sm sm:text-base font-bold transition-all duration-200 ${size.label === option.label
                       ? "border-[#7E22CE] bg-[#7E22CE] text-white shadow-xs"
                       : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
@@ -246,9 +271,9 @@ export default function ProductDetail({ product, related, reviews = [], existing
                 Selected Color: <span className="text-slate-900 font-bold">{color}</span>
               </label>
               <div className="mt-2.5 flex flex-wrap gap-3">
-                {colorOptions.map((c) => (
+                {colorOptions.map((c, idx) => (
                   <button
-                    key={c.name}
+                    key={`${c.name}-${idx}`}
                     type="button"
                     onClick={() => selectColor(c.name)}
                     title={c.name}
@@ -265,11 +290,12 @@ export default function ProductDetail({ product, related, reviews = [], existing
           {/* Quantity & CTAs */}
           <div className="mt-7 flex flex-wrap items-center gap-3.5 sm:gap-4">
             {/* Quantity Controls */}
-            <div className="flex items-center rounded-xl border border-slate-300 bg-white shadow-2xs">
+            <div className={`flex items-center rounded-xl border border-slate-300 bg-white shadow-2xs ${outOfStock ? "opacity-50" : ""}`}>
               <button
                 type="button"
+                disabled={outOfStock}
                 onClick={() => setQty((current) => Math.max(1, current - 1))}
-                className="p-3 lg:p-4 text-slate-600 transition hover:text-[#7E22CE]"
+                className="p-3 lg:p-4 text-slate-600 transition hover:text-[#7E22CE] disabled:pointer-events-none"
                 aria-label="Decrease quantity"
               >
                 <Minus size={18} />
@@ -277,19 +303,23 @@ export default function ProductDetail({ product, related, reviews = [], existing
               <input
                 type="number"
                 min={1}
+                max={hasVariantTracking ? maxQty : undefined}
+                disabled={outOfStock}
                 inputMode="numeric"
                 value={qty}
                 onChange={(e) => {
                   const value = parseInt(e.target.value, 10);
-                  setQty(Number.isNaN(value) ? 1 : Math.max(1, value));
+                  const next = Number.isNaN(value) ? 1 : Math.max(1, value);
+                  setQty(hasVariantTracking ? Math.min(next, Math.max(1, maxQty)) : next);
                 }}
                 className="w-14 lg:w-16 bg-transparent text-center text-base lg:text-lg font-bold text-slate-900 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 aria-label="Quantity"
               />
               <button
                 type="button"
-                onClick={() => setQty((current) => current + 1)}
-                className="p-3 lg:p-4 text-slate-600 transition hover:text-[#7E22CE]"
+                disabled={outOfStock}
+                onClick={() => setQty((current) => (hasVariantTracking ? Math.min(maxQty, current + 1) : current + 1))}
+                className="p-3 lg:p-4 text-slate-600 transition hover:text-[#7E22CE] disabled:pointer-events-none"
                 aria-label="Increase quantity"
               >
                 <Plus size={18} />
@@ -299,18 +329,20 @@ export default function ProductDetail({ product, related, reviews = [], existing
             {/* Add to Cart */}
             <button
               type="button"
+              disabled={outOfStock}
               onClick={() => addItem(product, { size: cartSize, color, qty })}
-              className="group inline-flex flex-1 items-center justify-center gap-2.5 rounded-xl bg-[#7E22CE] px-6 sm:px-7 lg:px-8 py-3.5 sm:py-4 lg:py-4.5 text-sm sm:text-base lg:text-lg font-extrabold text-white shadow-sm transition-all hover:bg-[#6B21A8] active:scale-98"
+              className="group inline-flex flex-1 items-center justify-center gap-2.5 rounded-xl bg-[#7E22CE] px-6 sm:px-7 lg:px-8 py-3.5 sm:py-4 lg:py-4.5 text-sm sm:text-base lg:text-lg font-extrabold text-white shadow-sm transition-all hover:bg-[#6B21A8] active:scale-98 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:hover:bg-slate-300"
             >
               <ShoppingBag size={20} />
-              Add to Cart
+              {outOfStock ? "Out of Stock" : "Add to Cart"}
             </button>
 
             {/* Buy Now */}
             <button
               type="button"
+              disabled={outOfStock}
               onClick={buyNow}
-              className="inline-flex w-full sm:w-auto items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white px-6 lg:px-8 py-3.5 sm:py-4 lg:py-4.5 text-sm sm:text-base lg:text-lg font-extrabold text-slate-900 transition-all hover:bg-slate-50 active:scale-98"
+              className="inline-flex w-full sm:w-auto items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white px-6 lg:px-8 py-3.5 sm:py-4 lg:py-4.5 text-sm sm:text-base lg:text-lg font-extrabold text-slate-900 transition-all hover:bg-slate-50 active:scale-98 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Zap size={19} className="text-[#7E22CE]" />
               Buy Now
@@ -413,11 +445,12 @@ export default function ProductDetail({ product, related, reviews = [], existing
           </div>
           <button
             type="button"
+            disabled={outOfStock}
             onClick={() => addItem(product, { size: cartSize, color, qty })}
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#7E22CE] px-5 py-3 text-sm font-extrabold text-white shadow-xs active:scale-95"
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#7E22CE] px-5 py-3 text-sm font-extrabold text-white shadow-xs active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             <ShoppingBag size={16} />
-            Add to Cart
+            {outOfStock ? "Out of Stock" : "Add to Cart"}
           </button>
         </div>
       </div>

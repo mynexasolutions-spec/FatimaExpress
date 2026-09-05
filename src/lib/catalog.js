@@ -27,6 +27,7 @@ function mapProductRow(row) {
     badge: row.badge || undefined,
     featured: row.is_featured,
     stockQuantity: row.stock_quantity,
+    variantStock: row.variant_stock ?? [],
     rating: row.rating ? Number(row.rating) : undefined,
     reviews: row.reviews_count,
   };

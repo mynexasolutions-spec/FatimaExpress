@@ -38,6 +38,13 @@ create policy "Users can view their own orders"
 -- each line item's `slug` against products.slug. security definer lets it
 -- update products even though the placing role (anon/authenticated) only
 -- has select access there via RLS.
+--
+-- Products with per-variant stock (variant_stock is a non-empty jsonb array
+-- of {size, color, stock}) get the matching size+color entry decremented,
+-- and stock_quantity is kept in sync as the sum of all variant stocks so
+-- existing low-stock views keep working unchanged. Products without variant
+-- tracking (variant_stock = '[]') fall back to decrementing stock_quantity
+-- directly, exactly like before.
 create or replace function public.decrement_stock_on_order()
 returns trigger
 language plpgsql
@@ -46,12 +53,52 @@ set search_path = public
 as $$
 declare
   line jsonb;
+  prod record;
+  variant jsonb;
+  updated_variants jsonb;
+  matched boolean;
+  qty int;
+  total int;
 begin
   for line in select * from jsonb_array_elements(coalesce(new.items, '[]'::jsonb))
   loop
-    update public.products
-    set stock_quantity = greatest(0, stock_quantity - coalesce((line->>'qty')::int, 0))
+    qty := coalesce((line->>'qty')::int, 0);
+
+    select id, variant_stock into prod
+    from public.products
     where slug = (line->>'slug');
+
+    if not found then
+      continue;
+    end if;
+
+    if jsonb_array_length(coalesce(prod.variant_stock, '[]'::jsonb)) > 0 then
+      updated_variants := '[]'::jsonb;
+      matched := false;
+      total := 0;
+
+      for variant in select * from jsonb_array_elements(prod.variant_stock)
+      loop
+        if not matched
+          and coalesce(variant->>'size', '') = coalesce(line->>'size', '')
+          and coalesce(variant->>'color', '') = coalesce(line->>'color', '')
+        then
+          variant := jsonb_set(variant, '{stock}', to_jsonb(greatest(0, coalesce((variant->>'stock')::int, 0) - qty)));
+          matched := true;
+        end if;
+        total := total + coalesce((variant->>'stock')::int, 0);
+        updated_variants := updated_variants || jsonb_build_array(variant);
+      end loop;
+
+      update public.products
+      set variant_stock = updated_variants,
+          stock_quantity = total
+      where id = prod.id;
+    else
+      update public.products
+      set stock_quantity = greatest(0, stock_quantity - qty)
+      where id = prod.id;
+    end if;
   end loop;
   return new;
 end;
@@ -144,6 +191,7 @@ create table if not exists public.products (
   is_featured boolean not null default false,
   is_active boolean not null default true,
   stock_quantity int not null default 100,
+  variant_stock jsonb not null default '[]'::jsonb,
   rating numeric(2, 1) default 4.8,
   reviews_count int not null default 0,
   created_at timestamptz not null default now(),
@@ -151,6 +199,11 @@ create table if not exists public.products (
 );
 
 alter table public.products enable row level security;
+
+-- Per size+colour stock, e.g. [{ "size": "18\"", "color": "Rose Gold", "stock": 20 }, ...].
+-- Empty array (the default) means the product isn't variant-tracked and
+-- stock_quantity is managed directly instead — see decrement_stock_on_order().
+alter table public.products add column if not exists variant_stock jsonb not null default '[]'::jsonb;
 
 create policy "Anyone can view active products"
   on public.products for select

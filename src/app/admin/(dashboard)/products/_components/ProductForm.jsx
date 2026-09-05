@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ImagePlus, LoaderCircle, Package, Palette, Percent, Plus, Ruler, Tag, Trash2, X } from "lucide-react";
+import { ArrowLeft, Boxes, ImagePlus, LoaderCircle, Package, Palette, Percent, Plus, Ruler, Tag, Trash2, X } from "lucide-react";
 import ImageUploader from "@/components/admin/ImageUploader";
 import { colorSwatches, shapes, themes } from "@/data/products";
 
@@ -72,6 +72,7 @@ export default function ProductForm({ action, product, categories }) {
   const [sizes, setSizes] = useState(product?.sizes?.length ? product.sizes : [{ label: "", price: "" }]);
   const [specs, setSpecs] = useState(product?.specs?.length ? product.specs : [{ label: "", value: "" }]);
   const [bulkPricing, setBulkPricing] = useState(product?.bulk_pricing?.length ? product.bulk_pricing : []);
+  const [variantStock, setVariantStock] = useState(product?.variant_stock?.length ? product.variant_stock : []);
   const [shape, setShape] = useState(product?.shape || "");
   const [theme, setTheme] = useState(product?.theme || "");
   const [badge, setBadge] = useState(product?.badge || "");
@@ -114,6 +115,36 @@ export default function ProductForm({ action, product, categories }) {
       .map((t) => ({ minQty: Number(t.minQty), discountPercent: Number(t.discountPercent) }))
       .sort((a, b) => a.minQty - b.minQty);
 
+  // Variant stock — tracked per size+colour combo once the product has at
+  // least one real size or colour; falls back to a plain stock quantity
+  // input otherwise.
+  const activeSizeLabels = [...new Set(sizes.map((s) => s.label).filter(Boolean))];
+  const activeColorNames = [...new Set(colors.map((c) => c.name).filter(Boolean))];
+  const hasVariants = activeSizeLabels.length > 0 || activeColorNames.length > 0;
+  const variantRows = activeSizeLabels.length ? activeSizeLabels : [null];
+  const variantCols = activeColorNames.length ? activeColorNames : [null];
+
+  const variantKey = (size, color) => `${size || ""}__${color || ""}`;
+  const variantMap = new Map(variantStock.map((v) => [variantKey(v.size, v.color), v.stock]));
+  const getVariantStock = (size, color) => variantMap.get(variantKey(size, color)) ?? "";
+  const updateVariantStock = (size, color, value) => {
+    const stock = value === "" ? "" : Math.max(0, Number(value) || 0);
+    setVariantStock((current) => {
+      const key = variantKey(size, color);
+      const idx = current.findIndex((v) => variantKey(v.size, v.color) === key);
+      if (idx >= 0) return current.map((v, i) => (i === idx ? { ...v, stock } : v));
+      return [...current, { size: size || null, color: color || null, stock }];
+    });
+  };
+
+  const cleanVariantStock = () =>
+    hasVariants
+      ? variantRows.flatMap((size) =>
+          variantCols.map((color) => ({ size, color, stock: Number(getVariantStock(size, color)) || 0 })),
+        )
+      : [];
+  const totalVariantStock = cleanVariantStock().reduce((sum, v) => sum + v.stock, 0);
+
   return (
     <div>
       <Link href="/admin/products" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-brand-700">
@@ -129,6 +160,7 @@ export default function ProductForm({ action, product, categories }) {
         <input type="hidden" name="sizes" value={JSON.stringify(cleanSizes())} />
         <input type="hidden" name="specs" value={JSON.stringify(cleanSpecs())} />
         <input type="hidden" name="bulk_pricing" value={JSON.stringify(cleanBulkPricing())} />
+        <input type="hidden" name="variant_stock" value={JSON.stringify(cleanVariantStock())} />
         <input type="hidden" name="visual" value={JSON.stringify(visual)} />
         <input type="hidden" name="image_url" value={imageUrl || ""} />
 
@@ -202,8 +234,20 @@ export default function ProductForm({ action, product, categories }) {
                   <input type="number" step="0.01" name="compare_at" defaultValue={product?.compare_at ?? ""} className={inputClass} />
                 </div>
                 <div>
-                  <label className={labelClass}>Stock quantity</label>
-                  <input type="number" name="stock_quantity" defaultValue={product?.stock_quantity ?? 100} className={inputClass} />
+                  <label className={labelClass}>Stock quantity{hasVariants ? " (auto)" : ""}</label>
+                  {hasVariants ? (
+                    <>
+                      <div className={`${inputClass} flex items-center justify-between bg-slate-50 text-slate-600`}>
+                        <span className="font-bold">{totalVariantStock}</span>
+                        <a href="#variant-stock" className="text-xs font-semibold text-brand-600 hover:underline">
+                          Set below ↓
+                        </a>
+                      </div>
+                      <input type="hidden" name="stock_quantity" value={totalVariantStock} />
+                    </>
+                  ) : (
+                    <input type="number" name="stock_quantity" defaultValue={product?.stock_quantity ?? 100} className={inputClass} />
+                  )}
                 </div>
               </div>
 
@@ -495,6 +539,77 @@ export default function ProductForm({ action, product, categories }) {
                 </div>
               </div>
             </div>
+
+            {hasVariants && (
+              <div id="variant-stock" className={`${panelClass} scroll-mt-6`}>
+                <SectionTitle icon={Boxes}>Stock by Variant</SectionTitle>
+                <p className="-mt-2 mb-4 text-xs text-slate-500">
+                  You added {activeSizeLabels.length && activeColorNames.length ? "sizes and colours" : activeSizeLabels.length ? "sizes" : "colours"}{" "}
+                  above — set how many of each are in stock. The total feeds the "Stock quantity" field automatically.
+                </p>
+
+                {activeSizeLabels.length && activeColorNames.length ? (
+                  <div className="overflow-x-auto rounded-xl border border-slate-100">
+                    <table className="w-full min-w-[420px] border-collapse text-sm">
+                      <thead>
+                        <tr className="bg-slate-50">
+                          <th className="sticky left-0 bg-slate-50 px-3 py-2.5 text-left text-xs font-bold text-slate-400"></th>
+                          {activeColorNames.map((color) => (
+                            <th key={color} className="px-2 py-2.5 text-center text-xs font-bold text-slate-600">
+                              {color}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {activeSizeLabels.map((size, idx) => (
+                          <tr key={size} className={idx % 2 ? "bg-white" : "bg-slate-50/40"}>
+                            <td className="sticky left-0 bg-inherit px-3 py-1.5 text-xs font-bold text-slate-600">{size}</td>
+                            {activeColorNames.map((color) => (
+                              <td key={color} className="px-1.5 py-1.5">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={getVariantStock(size, color)}
+                                  onChange={(e) => updateVariantStock(size, color, e.target.value)}
+                                  placeholder="0"
+                                  className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-center text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                                />
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {(activeSizeLabels.length ? activeSizeLabels : activeColorNames).map((label) => (
+                      <div key={label} className="flex items-center gap-2.5">
+                        <span className="flex-1 truncate text-sm font-semibold text-slate-600">{label}</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={activeSizeLabels.length ? getVariantStock(label, null) : getVariantStock(null, label)}
+                          onChange={(e) =>
+                            activeSizeLabels.length
+                              ? updateVariantStock(label, null, e.target.value)
+                              : updateVariantStock(null, label, e.target.value)
+                          }
+                          placeholder="0"
+                          className="w-28 rounded-lg border border-slate-200 px-3 py-1.5 text-center text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <p className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs font-semibold text-slate-500">
+                  Total stock
+                  <span className="text-sm font-bold text-brand-700">{totalVariantStock}</span>
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -524,9 +639,9 @@ export default function ProductForm({ action, product, categories }) {
             </div>
 
             <div className={panelClass}>
-              <SectionTitle icon={ImagePlus}>Main Photo</SectionTitle>
-              <p className="-mt-2 mb-3 text-xs text-slate-500">Optional — falls back to a colour illustration if left empty.</p>
-              <ImageUploader value={imageUrl} onChange={setImageUrl} previewClassName="h-32 w-full" />
+              <SectionTitle icon={ImagePlus}>Cover Photo *</SectionTitle>
+              <p className="-mt-2 mb-3 text-xs text-slate-500">Required — this is the main image shown on product cards and listings.</p>
+              <ImageUploader value={imageUrl} onChange={setImageUrl} previewClassName="aspect-square w-full" />
             </div>
           </div>
         </div>

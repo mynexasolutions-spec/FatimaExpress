@@ -60,11 +60,13 @@ export async function createProduct(_prevState, formData) {
   const fields = parseProductFields(formData);
   if (!fields.name) return { error: "Product name is required." };
   if (!fields.price || fields.price <= 0) return { error: "Base price is required and must be greater than 0 (see the Pricing & Stock tab)." };
+  if (!fields.image_url) return { error: "Cover photo is required." };
 
   const colors = parseJsonField(formData, "colors");
   const sizes = parseJsonField(formData, "sizes");
   const specs = parseJsonField(formData, "specs");
   const bulkPricing = parseJsonField(formData, "bulk_pricing");
+  const variantStock = parseJsonField(formData, "variant_stock");
   const visual = parseJsonField(formData, "visual", { kind: "round", color: "#3382f0" });
 
   const { error } = await supabase.from("products").insert({
@@ -74,6 +76,7 @@ export async function createProduct(_prevState, formData) {
     sizes,
     specs,
     bulk_pricing: bulkPricing,
+    variant_stock: variantStock,
     visual,
   });
 
@@ -91,11 +94,13 @@ export async function updateProduct(_prevState, formData) {
   const fields = parseProductFields(formData);
   if (!id || !fields.name) return { error: "Product name is required." };
   if (!fields.price || fields.price <= 0) return { error: "Base price is required and must be greater than 0 (see the Pricing & Stock tab)." };
+  if (!fields.image_url) return { error: "Cover photo is required." };
 
   const colors = parseJsonField(formData, "colors");
   const sizes = parseJsonField(formData, "sizes");
   const specs = parseJsonField(formData, "specs");
   const bulkPricing = parseJsonField(formData, "bulk_pricing");
+  const variantStock = parseJsonField(formData, "variant_stock");
   const visual = parseJsonField(formData, "visual", { kind: "round", color: "#3382f0" });
 
   const { error } = await supabase
@@ -107,6 +112,7 @@ export async function updateProduct(_prevState, formData) {
       sizes,
       specs,
       bulk_pricing: bulkPricing,
+      variant_stock: variantStock,
       visual,
       updated_at: new Date().toISOString(),
     })
