@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import ShopClient from "./ShopClient";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 
 export const metadata = {
   title: "Shop Balloons & Party Supplies",
@@ -9,7 +10,7 @@ export const metadata = {
 
 export default function ShopPage() {
   return (
-    <Suspense fallback={<div className="container-page py-24 text-center text-slate-400">Loading shop…</div>}>
+    <Suspense fallback={<LoadingScreen label="Loading shop" />}>
       <ShopClient />
     </Suspense>
   );

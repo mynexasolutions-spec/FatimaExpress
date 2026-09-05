@@ -183,9 +183,18 @@ export default function CartDrawer() {
                         >
                           <Minus size={13} />
                         </button>
-                        <span className="w-7 text-center text-xs sm:text-sm font-bold text-slate-900">
-                          {line.qty}
-                        </span>
+                        <input
+                          type="number"
+                          min={1}
+                          inputMode="numeric"
+                          value={line.qty}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value, 10);
+                            updateQty(line.key, Number.isNaN(value) ? 1 : Math.max(1, value));
+                          }}
+                          className="w-10 bg-transparent text-center text-xs sm:text-sm font-bold text-slate-900 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          aria-label="Quantity"
+                        />
                         <button
                           type="button"
                           onClick={() => updateQty(line.key, line.qty + 1)}

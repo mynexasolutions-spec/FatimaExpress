@@ -74,10 +74,10 @@ export default function ProductForm({ action, product, categories }) {
   const [bulkPricing, setBulkPricing] = useState(product?.bulk_pricing?.length ? product.bulk_pricing : []);
   const [shape, setShape] = useState(product?.shape || "");
   const [theme, setTheme] = useState(product?.theme || "");
-  const [accentColor, setAccentColor] = useState(product?.visual?.color || "#8b5cf6");
   const [badge, setBadge] = useState(product?.badge || "");
   const [activeColorIndex, setActiveColorIndex] = useState(0);
 
+  const accentColor = colors[0]?.hex || product?.visual?.color || "#8b5cf6";
   const visual = { kind: SHAPE_TO_VISUAL_KIND[shape] || "round", color: accentColor };
 
   const addColor = (preset) => {
@@ -527,31 +527,6 @@ export default function ProductForm({ action, product, categories }) {
               <SectionTitle icon={ImagePlus}>Main Photo</SectionTitle>
               <p className="-mt-2 mb-3 text-xs text-slate-500">Optional — falls back to a colour illustration if left empty.</p>
               <ImageUploader value={imageUrl} onChange={setImageUrl} previewClassName="h-32 w-full" />
-            </div>
-
-            <div className={panelClass}>
-              <SectionTitle icon={Palette}>Product Colour</SectionTitle>
-              <p className="-mt-2 mb-3 text-xs text-slate-500">Accent colour shown as a swatch on cards and listings.</p>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={accentColor}
-                  onChange={(e) => setAccentColor(e.target.value)}
-                  className="h-11 w-14 shrink-0 cursor-pointer rounded-xl border border-slate-200 p-1"
-                  aria-label="Pick product colour"
-                />
-                <input
-                  value={accentColor}
-                  onChange={(e) => setAccentColor(e.target.value)}
-                  placeholder="#8b5cf6"
-                  maxLength={7}
-                  className={`${inputClass} font-mono uppercase`}
-                />
-                <span
-                  className="h-11 w-11 shrink-0 rounded-full border-2 border-white shadow-md ring-1 ring-slate-200"
-                  style={{ backgroundColor: accentColor }}
-                />
-              </div>
             </div>
           </div>
         </div>

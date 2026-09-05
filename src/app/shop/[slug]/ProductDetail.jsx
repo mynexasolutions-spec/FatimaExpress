@@ -274,7 +274,18 @@ export default function ProductDetail({ product, related, reviews = [], existing
               >
                 <Minus size={18} />
               </button>
-              <span className="w-10 lg:w-12 text-center text-base lg:text-lg font-bold text-slate-900">{qty}</span>
+              <input
+                type="number"
+                min={1}
+                inputMode="numeric"
+                value={qty}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value, 10);
+                  setQty(Number.isNaN(value) ? 1 : Math.max(1, value));
+                }}
+                className="w-14 lg:w-16 bg-transparent text-center text-base lg:text-lg font-bold text-slate-900 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                aria-label="Quantity"
+              />
               <button
                 type="button"
                 onClick={() => setQty((current) => current + 1)}

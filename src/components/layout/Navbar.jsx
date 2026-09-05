@@ -3,23 +3,37 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, Search, ShoppingBag, User, X, ChevronDown } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronDown,
+  Home,
+  Info,
+  LogOut,
+  Menu,
+  Phone,
+  Search,
+  ShieldCheck,
+  ShoppingBag,
+  Truck,
+  User,
+  X,
+} from "lucide-react";
 import Logo from "./Logo";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { categories } from "@/data/products";
 
 const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "Shop All", href: "/shop" },
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
+  { label: "Home", href: "/", icon: Home },
+  { label: "Shop All", href: "/shop", icon: ShoppingBag },
+  { label: "About", href: "/about", icon: Info },
+  { label: "Contact", href: "/contact", icon: Phone },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const { count, openCart, hydrated } = useCart();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const router = useRouter();
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -240,13 +254,17 @@ export default function Navbar() {
 
       {/* Drawer */}
       <aside
-        className={`fixed left-0 top-0 z-[70] flex h-dvh w-full max-w-[320px] flex-col bg-white shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] lg:hidden ${
+        className={`fixed left-0 top-0 z-[70] flex h-dvh w-full max-w-[320px] flex-col overflow-hidden bg-white shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] lg:hidden ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         aria-label="Site menu"
       >
+        {/* Decorative glow */}
+        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-purple-200/40 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-pink-100/50 blur-3xl" />
+
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+        <div className="relative flex items-center justify-between px-5 pb-4 pt-5">
           <Logo className="scale-90 origin-left" />
           <button
             type="button"
@@ -258,37 +276,80 @@ export default function Navbar() {
           </button>
         </div>
 
+        {/* Account greeting card */}
+        <div className="relative px-5 pb-4">
+          {user ? (
+            <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-[#6D28D9] to-[#9333EA] p-4 text-white shadow-lg shadow-purple-900/20">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/15 text-base font-bold ring-2 ring-white/25">
+                {(user.user_metadata?.full_name || user.email || "U").charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold">{user.user_metadata?.full_name || "Welcome back"}</p>
+                <p className="truncate text-xs text-purple-100">{user.email}</p>
+              </div>
+              <Link
+                href="/account"
+                onClick={() => setMenuOpen(false)}
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/15 transition hover:bg-white/25"
+                aria-label="My account"
+              >
+                <ArrowRight size={15} />
+              </Link>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-[#6D28D9] to-[#9333EA] p-4 text-white shadow-lg shadow-purple-900/20">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold">Welcome to Fatima Express</p>
+                <p className="mt-0.5 text-xs text-purple-100">Sign in for faster checkout &amp; order tracking.</p>
+              </div>
+              <Link
+                href="/login"
+                onClick={() => setMenuOpen(false)}
+                className="shrink-0 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-purple-700 shadow-sm transition hover:bg-purple-50"
+              >
+                Sign In
+              </Link>
+            </div>
+          )}
+        </div>
+
         {/* Search Bar inside Mobile Sidebar */}
-        <div className="border-b border-slate-100 bg-slate-50/70 px-5 py-3">
+        <div className="relative px-5 pb-4">
           <form onSubmit={submitSearch} className="relative flex items-center">
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search balloons, accessories…"
-              className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm font-medium text-slate-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100 placeholder:text-slate-400"
+              className="w-full rounded-full border border-slate-200 bg-slate-50/80 py-2.5 pl-10 pr-4 text-sm font-medium text-slate-900 outline-none transition focus:border-purple-500 focus:bg-white focus:ring-4 focus:ring-purple-100 placeholder:text-slate-400"
             />
             <Search size={16} className="pointer-events-none absolute left-3.5 text-slate-400" />
           </form>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-5 py-2">
-          <div className="divide-y divide-slate-100">
+        <nav className="relative flex-1 overflow-y-auto px-5 py-1">
+          <div className="space-y-0.5">
             {navLinks.map((link) => {
               const active = isActive(link.href);
+              const Icon = link.icon;
               return (
                 <Link
                   key={link.label}
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
-                  className={`flex items-center justify-between py-3.5 text-base font-semibold transition ${
-                    active ? "text-purple-700" : "text-slate-700 hover:text-purple-700"
+                  className={`flex items-center gap-3 rounded-xl px-3 py-3 text-base font-semibold transition ${
+                    active ? "bg-purple-50 text-purple-700" : "text-slate-700 hover:bg-slate-50 hover:text-purple-700"
                   }`}
                 >
-                  {link.label}
-                  {active && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-purple-600" />
-                  )}
+                  <span
+                    className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg transition ${
+                      active ? "bg-purple-100 text-purple-700" : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    <Icon size={15} />
+                  </span>
+                  <span className="flex-1">{link.label}</span>
+                  {active && <span className="h-1.5 w-1.5 rounded-full bg-purple-600" />}
                 </Link>
               );
             })}
@@ -296,7 +357,7 @@ export default function Navbar() {
 
           {/* Category links in mobile */}
           <div className="py-4">
-            <p className="pb-2 text-xs font-extrabold text-slate-400">
+            <p className="pb-2 text-xs font-extrabold uppercase tracking-wider text-slate-400">
               Categories
             </p>
             <div className="grid grid-cols-2 gap-1.5">
@@ -305,24 +366,52 @@ export default function Navbar() {
                   key={c.slug}
                   href={`/shop?category=${c.slug}`}
                   onClick={() => setMenuOpen(false)}
-                  className="rounded-xl bg-slate-50 px-3.5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition"
+                  className="group flex items-start gap-2 rounded-xl border border-slate-100 bg-slate-50/80 px-3.5 py-2.5 text-sm font-semibold leading-snug text-slate-700 transition hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700"
                 >
-                  {c.name}
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-purple-400 transition group-hover:bg-purple-600" />
+                  <span>{c.name}</span>
                 </Link>
               ))}
             </div>
           </div>
+
+          {user && (
+            <button
+              type="button"
+              onClick={() => {
+                signOut();
+                setMenuOpen(false);
+              }}
+              className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-base font-semibold text-red-600 transition hover:bg-red-50"
+            >
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-red-50 text-red-600">
+                <LogOut size={15} />
+              </span>
+              Sign out
+            </button>
+          )}
         </nav>
 
         {/* Mobile CTA */}
-        <div className="border-t border-slate-100 p-5">
+        <div className="relative border-t border-slate-100 p-5">
           <Link
             href="/shop"
             onClick={() => setMenuOpen(false)}
-            className="flex w-full items-center justify-center rounded-full bg-gradient-to-r from-[#6D28D9] to-[#9333EA] px-6 py-3 text-sm font-bold text-white shadow-glow transition-all hover:from-[#5B21B6] hover:to-[#7E22CE]"
+            className="group flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#6D28D9] to-[#9333EA] px-6 py-3.5 text-sm font-bold text-white shadow-glow transition-all hover:from-[#5B21B6] hover:to-[#7E22CE]"
           >
             Shop All Products
+            <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
           </Link>
+          <div className="mt-3.5 flex items-center justify-center gap-4 text-[11px] font-semibold text-slate-400">
+            <span className="flex items-center gap-1.5">
+              <Truck size={13} className="text-purple-500" />
+              UAE-Wide Delivery
+            </span>
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck size={13} className="text-purple-500" />
+              Secure Checkout
+            </span>
+          </div>
         </div>
       </aside>
     </header>

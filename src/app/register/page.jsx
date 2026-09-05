@@ -92,7 +92,7 @@ export default function RegisterPage() {
               value={form.email}
               onChange={update("email")}
               className={inputClass}
-              placeholder="name@company.com"
+              placeholder="Enter your email"
             />
           </div>
         </div>

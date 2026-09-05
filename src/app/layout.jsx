@@ -29,6 +29,11 @@ export const metadata = {
     type: "website",
     locale: "en_AE",
   },
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default async function RootLayout({ children }) {

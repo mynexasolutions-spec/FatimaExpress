@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CheckCircle2, ShieldCheck, Sparkles, Truck } from "lucide-react";
+import Logo from "@/components/layout/Logo";
 
 const defaultPerks = [
   { title: "Wholesale Pricing", desc: "Exclusive bulk discounts for event planners & trade" },
@@ -62,7 +63,11 @@ export default function AuthShell({ title, subtitle, children, footer }) {
           {/* Right Form Area */}
           <div className="p-6 sm:p-12 lg:col-span-7 flex flex-col justify-center bg-white relative">
             <div className="max-w-md mx-auto w-full">
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-950 tracking-tight">
+              <div className="flex justify-center lg:justify-start">
+                <Logo compact />
+              </div>
+
+              <h1 className="mt-6 text-2xl sm:text-3xl font-bold text-slate-950 tracking-tight">
                 {title}
               </h1>
               <p className="mt-2 text-sm sm:text-base text-slate-500 font-normal">
