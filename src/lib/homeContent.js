@@ -5,6 +5,10 @@ import { createPublicClient, publicCatalogEnabled } from "@/lib/supabase/publicC
 // has something sensible to render.
 const DEFAULT_HERO_SLIDE = {
   eyebrow: "Wholesale Balloon Supplier",
+  badge1: "Wholesale Pricing",
+  badge2: "Delivery Across UAE",
+  floatingBadgeTitle: "Wholesale Supply",
+  floatingBadgeSubtitle: "Across UAE",
   heading_line1: "Bulk Orders For",
   heading_line2: "Events & Retail",
   description:
@@ -137,7 +141,7 @@ export const DEFAULT_HOME_CONTENT = {
     {
       question: "What payment methods do you accept?",
       answer:
-        "We accept Cash on Delivery and Bank Transfer. For Cash on Delivery, simply pay the driver when your order arrives; for Bank Transfer, we'll send you the details after your order is confirmed.",
+        "We currently accept Cash on Delivery only — simply pay the driver in cash or by card when your order arrives.",
     },
     {
       question: "Are you a decoration service or a balloon supplier?",

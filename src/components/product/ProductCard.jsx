@@ -6,6 +6,7 @@ import { ShoppingBag, Star, Eye } from "lucide-react";
 import BalloonVisual from "./BalloonVisual";
 import { useCart } from "@/context/CartContext";
 import { formatAED } from "@/lib/format";
+import { cldUrl } from "@/lib/cloudinary";
 
 export default function ProductCard({ product }) {
   const { addItem } = useCart();
@@ -22,7 +23,7 @@ export default function ProductCard({ product }) {
         {product.image ? (
           <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-108">
             <Image
-              src={product.image}
+              src={cldUrl(product.image)}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -59,10 +60,15 @@ export default function ProductCard({ product }) {
       <div className="flex flex-1 flex-col p-4 sm:p-4.5">
 
         {/* Rating row inside Card Body */}
-        {product.rating && (
+        {product.rating ? (
           <div className="flex items-center gap-1 text-xs font-extrabold text-amber-600">
             <Star size={11} className="fill-amber-400 text-amber-400" />
             <span>{product.rating}</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1 text-xs font-semibold text-slate-400">
+            <Star size={11} className="text-slate-300" />
+            <span>No reviews yet</span>
           </div>
         )}
 

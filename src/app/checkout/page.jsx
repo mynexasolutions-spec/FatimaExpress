@@ -9,7 +9,6 @@ import {
   Banknote,
   CheckCircle2,
   ChevronDown,
-  CreditCard,
   Lock,
   LoaderCircle,
   MapPin,
@@ -34,7 +33,6 @@ import { emirates, whatsappLink } from "@/data/site";
 
 const paymentMethods = [
   { value: "cod", label: "Cash on Delivery", icon: Banknote, note: "Pay cash or card to driver on arrival." },
-  { value: "transfer", label: "Direct Bank Transfer", icon: CreditCard, note: "Bank details provided post confirmation." },
 ];
 
 export default function CheckoutPage() {
@@ -379,10 +377,10 @@ export default function CheckoutPage() {
                 </span>
                 <div>
                   <h2 className="font-display text-xl font-bold text-slate-900">Payment Option</h2>
-                  <p className="text-xs sm:text-sm text-slate-500 font-medium font-sans">Select your preferred payment method.</p>
+                  <p className="text-xs sm:text-sm text-slate-500 font-medium font-sans">We currently accept Cash on Delivery only.</p>
                 </div>
               </div>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2 font-sans">
+              <div className="mt-6 grid gap-4 font-sans">
                 {paymentMethods.map(({ value, label, icon: Icon, note }) => (
                   <label
                     key={value}

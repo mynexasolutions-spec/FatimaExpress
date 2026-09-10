@@ -109,7 +109,10 @@ export default function ShopClient() {
     let list = products.filter((product) => {
       if (category && product.category !== category) return false;
       if (shape && product.shape !== shape) return false;
-      if (theme && product.theme !== theme) return false;
+      if (theme) {
+        const productThemes = (product.theme || "").split(",").map((t) => t.trim());
+        if (!productThemes.includes(theme)) return false;
+      }
       if (color && !product.colors?.some((c) => c.name === color)) return false;
       if (query) {
         const haystack = `${product.name} ${product.short} ${product.sku} ${product.category}`.toLowerCase();

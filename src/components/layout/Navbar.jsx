@@ -21,7 +21,7 @@ import {
 import Logo from "./Logo";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import { categories } from "@/data/products";
+import { categories as staticCategories } from "@/data/products";
 
 const navLinks = [
   { label: "Home", href: "/", icon: Home },
@@ -30,7 +30,7 @@ const navLinks = [
   { label: "Contact", href: "/contact", icon: Phone },
 ];
 
-export default function Navbar() {
+export default function Navbar({ categories = staticCategories }) {
   const pathname = usePathname();
   const { count, openCart, hydrated } = useCart();
   const { user, signOut } = useAuth();

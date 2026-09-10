@@ -10,7 +10,7 @@ export const metadata = {
 const HIGHLIGHTS = [
   { title: "5–7 Day Processing", desc: "Once a refund is approved" },
   { title: "Free Cancellations", desc: "Anytime before dispatch" },
-  { title: "Original Payment Method", desc: "Bank transfer or COD refund" },
+  { title: "Bank Transfer Refund", desc: "Sent to the account you provide" },
 ];
 
 const sectionHeading = "flex items-center gap-3 border-b border-purple-100 pb-2.5 font-display text-lg font-extrabold text-slate-950 sm:text-xl";
@@ -51,15 +51,10 @@ export default function RefundPolicyPage() {
           <CreditCard className={iconClass} />
           3. How Refunds Are Issued
         </h2>
-        <ul className="mt-3 list-disc space-y-2 pl-5 leading-relaxed">
-          <li>
-            <strong>Bank Transfer orders:</strong> Refunded to the same bank account the payment was made from.
-          </li>
-          <li>
-            <strong>Cash on Delivery orders:</strong> Refunded via bank transfer to an account you provide, since no online
-            payment was collected upfront.
-          </li>
-        </ul>
+        <p className="mt-3 leading-relaxed">
+          All orders are Cash on Delivery, so refunds are issued via bank transfer to an account you provide, since no online
+          payment was collected upfront.
+        </p>
       </div>
 
       <div className="border-t border-purple-100 pt-4 text-sm text-slate-500 sm:text-base">

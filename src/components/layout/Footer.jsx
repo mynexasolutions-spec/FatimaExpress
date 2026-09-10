@@ -117,6 +117,17 @@ export default function Footer({ contact = site }) {
 
       <div className="border-t border-white/10 py-6 text-center text-base text-slate-300 font-medium">
         <p>© {new Date().getFullYear()} {site.name}. All Rights Reserved.</p>
+        <p className="mt-1.5 text-sm text-slate-400">
+          Developed by{" "}
+          <a
+            href="https://www.nexa-solutions.in/"
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold text-slate-300 transition-colors hover:text-white"
+          >
+            Nexa Solutions
+          </a>
+        </p>
       </div>
     </footer>
   );

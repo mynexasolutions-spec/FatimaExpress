@@ -5,7 +5,8 @@ function mapCategoryRow(row) {
   return { slug: row.slug, name: row.name, blurb: row.blurb, image: row.image_url || null };
 }
 
-function mapProductRow(row) {
+function mapProductRow(row, reviewStats) {
+  const stats = reviewStats?.get(row.id);
   return {
     id: row.id,
     slug: row.slug,
@@ -28,9 +29,26 @@ function mapProductRow(row) {
     featured: row.is_featured,
     stockQuantity: row.stock_quantity,
     variantStock: row.variant_stock ?? [],
-    rating: row.rating ? Number(row.rating) : undefined,
-    reviews: row.reviews_count,
+    // Real average from approved reviews — no reviews yet means no badge, not a fake default.
+    rating: stats ? Number((stats.total / stats.count).toFixed(1)) : undefined,
+    reviews: stats?.count ?? 0,
   };
+}
+
+// Maps product_id -> { total, count } from every approved review, so the
+// average can be computed per product without an extra round trip per item.
+async function getReviewStats(supabase) {
+  const { data, error } = await supabase.from("reviews").select("product_id, rating").eq("is_approved", true);
+  if (error || !data) return new Map();
+
+  const stats = new Map();
+  for (const { product_id, rating } of data) {
+    const entry = stats.get(product_id) ?? { total: 0, count: 0 };
+    entry.total += Number(rating) || 0;
+    entry.count += 1;
+    stats.set(product_id, entry);
+  }
+  return stats;
 }
 
 // Deliberately uncached — each call hits Supabase fresh so admin edits show
@@ -53,11 +71,11 @@ export async function getAllProducts() {
   if (publicCatalogEnabled) {
     try {
       const supabase = createPublicClient();
-      const { data, error } = await supabase
-        .from("products")
-        .select("*, categories ( slug )")
-        .order("created_at", { ascending: false });
-      if (!error && data?.length) return data.map(mapProductRow);
+      const [{ data, error }, reviewStats] = await Promise.all([
+        supabase.from("products").select("*, categories ( slug )").order("created_at", { ascending: false }),
+        getReviewStats(supabase),
+      ]);
+      if (!error && data?.length) return data.map((row) => mapProductRow(row, reviewStats));
     } catch {
       // fall through to static catalog
     }

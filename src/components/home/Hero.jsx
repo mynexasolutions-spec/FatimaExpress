@@ -127,21 +127,27 @@ export default function Hero({ slides }) {
         {/* --- TOP HEADER & TEXT AREA --- */}
         <div className="w-full flex flex-col items-center">
           {/* 1. Top Badges */}
-          <div className="flex flex-nowrap items-center justify-center gap-1.5 sm:gap-2 animate-fade-up pt-1 max-w-full">
-            <span className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-[#FCE7F3]/95 px-3 py-1 font-display text-xs sm:text-xs font-bold text-[#D946EF] shadow-2xs whitespace-nowrap backdrop-blur-xs">
-              <Sparkles size={11} className="text-[#EAB308] fill-[#EAB308]" />
-              WHOLESALE PRICING
-            </span>
-            <span className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full border border-slate-100 bg-white/95 px-3 py-1 font-display text-xs sm:text-xs font-bold text-[#334155] shadow-xs backdrop-blur-xs whitespace-nowrap">
-              <span className="relative flex h-3.5 w-3.5 shrink-0 overflow-hidden rounded-full border border-slate-200">
-                <span className="absolute left-0 top-0 bottom-0 w-[30%] bg-[#EF4444] z-10" />
-                <span className="absolute right-0 top-0 w-[70%] h-[33.33%] bg-[#10B981]" />
-                <span className="absolute right-0 top-[33.33%] w-[70%] h-[33.33%] bg-white" />
-                <span className="absolute right-0 bottom-0 w-[70%] h-[33.33%] bg-[#0F172A]" />
-              </span>
-              DELIVERY ACROSS UAE
-            </span>
-          </div>
+          {(hero.badge1 || hero.badge2) && (
+            <div className="flex flex-nowrap items-center justify-center gap-1.5 sm:gap-2 animate-fade-up pt-1 max-w-full">
+              {hero.badge1 && (
+                <span className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-[#FCE7F3]/95 px-3 py-1 font-display text-xs sm:text-xs font-bold uppercase text-[#D946EF] shadow-2xs whitespace-nowrap backdrop-blur-xs">
+                  <Sparkles size={11} className="text-[#EAB308] fill-[#EAB308]" />
+                  {hero.badge1}
+                </span>
+              )}
+              {hero.badge2 && (
+                <span className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full border border-slate-100 bg-white/95 px-3 py-1 font-display text-xs sm:text-xs font-bold uppercase text-[#334155] shadow-xs backdrop-blur-xs whitespace-nowrap">
+                  <span className="relative flex h-3.5 w-3.5 shrink-0 overflow-hidden rounded-full border border-slate-200">
+                    <span className="absolute left-0 top-0 bottom-0 w-[30%] bg-[#EF4444] z-10" />
+                    <span className="absolute right-0 top-0 w-[70%] h-[33.33%] bg-[#10B981]" />
+                    <span className="absolute right-0 top-[33.33%] w-[70%] h-[33.33%] bg-white" />
+                    <span className="absolute right-0 bottom-0 w-[70%] h-[33.33%] bg-[#0F172A]" />
+                  </span>
+                  {hero.badge2}
+                </span>
+              )}
+            </div>
+          )}
 
           {/* 2. Main Headline */}
           <h1 className="animate-fade-up mt-3 font-display text-3xl sm:text-4xl font-black tracking-tight text-[#0F172A] leading-[1.12] max-w-md">
@@ -246,39 +252,51 @@ export default function Hero({ slides }) {
         </p>
       </div>
 
-      <Link
-        href="/shop"
-        className="hidden lg:flex absolute bottom-[8%] right-[4%] z-20 items-center gap-3 rounded-full bg-white/95 px-5 py-3 shadow-2xl backdrop-blur-md border border-purple-100 transition-all hover:-translate-y-1 hover:scale-105 hover:bg-white group"
-      >
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#7E22CE] to-[#D946EF] text-white shadow-md transition-transform group-hover:rotate-12">
-          <Truck size={15} />
-        </span>
-        <span className="leading-tight">
-          <span className="block text-base font-extrabold text-[#0F172A] group-hover:text-[#7E22CE] transition-colors">Wholesale Supply</span>
-          <span className="block text-sm font-medium text-slate-500">Across UAE</span>
-        </span>
-        <ChevronRight size={14} className="ml-0.5 text-slate-400 group-hover:translate-x-1 transition-transform" />
-      </Link>
+      {hero.floatingBadgeTitle && (
+        <Link
+          href="/shop"
+          className="hidden lg:flex absolute bottom-[8%] right-[4%] z-20 items-center gap-3 rounded-full bg-white/95 px-5 py-3 shadow-2xl backdrop-blur-md border border-purple-100 transition-all hover:-translate-y-1 hover:scale-105 hover:bg-white group"
+        >
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#7E22CE] to-[#D946EF] text-white shadow-md transition-transform group-hover:rotate-12">
+            <Truck size={15} />
+          </span>
+          <span className="leading-tight">
+            <span className="block text-base font-extrabold text-[#0F172A] group-hover:text-[#7E22CE] transition-colors">
+              {hero.floatingBadgeTitle}
+            </span>
+            {hero.floatingBadgeSubtitle && (
+              <span className="block text-sm font-medium text-slate-500">{hero.floatingBadgeSubtitle}</span>
+            )}
+          </span>
+          <ChevronRight size={14} className="ml-0.5 text-slate-400 group-hover:translate-x-1 transition-transform" />
+        </Link>
+      )}
 
       {/* Laptop Main Content Column */}
       <div className="container-page relative z-10 w-full hidden lg:block">
         <div key={active} className="max-w-2xl">
           {/* Top Badges */}
-          <div className="animate-fade-up flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FCE7F3] px-4 py-1.5 font-display text-base font-bold text-[#D946EF] shadow-2xs">
-              <Sparkles size={14} className="text-[#EAB308] fill-[#EAB308]" />
-              Wholesale Pricing
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-white/90 px-4 py-1.5 font-display text-base font-bold text-[#334155] shadow-xs backdrop-blur">
-              <span className="relative flex h-4 w-4 shrink-0 overflow-hidden rounded-full border border-slate-200">
-                <span className="absolute left-0 top-0 bottom-0 w-[30%] bg-[#EF4444] z-10" />
-                <span className="absolute right-0 top-0 w-[70%] h-[33.33%] bg-[#10B981]" />
-                <span className="absolute right-0 top-[33.33%] w-[70%] h-[33.33%] bg-white" />
-                <span className="absolute right-0 bottom-0 w-[70%] h-[33.33%] bg-[#0F172A]" />
-              </span>
-              Delivery Across UAE
-            </span>
-          </div>
+          {(hero.badge1 || hero.badge2) && (
+            <div className="animate-fade-up flex flex-wrap items-center gap-3">
+              {hero.badge1 && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FCE7F3] px-4 py-1.5 font-display text-base font-bold text-[#D946EF] shadow-2xs">
+                  <Sparkles size={14} className="text-[#EAB308] fill-[#EAB308]" />
+                  {hero.badge1}
+                </span>
+              )}
+              {hero.badge2 && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-white/90 px-4 py-1.5 font-display text-base font-bold text-[#334155] shadow-xs backdrop-blur">
+                  <span className="relative flex h-4 w-4 shrink-0 overflow-hidden rounded-full border border-slate-200">
+                    <span className="absolute left-0 top-0 bottom-0 w-[30%] bg-[#EF4444] z-10" />
+                    <span className="absolute right-0 top-0 w-[70%] h-[33.33%] bg-[#10B981]" />
+                    <span className="absolute right-0 top-[33.33%] w-[70%] h-[33.33%] bg-white" />
+                    <span className="absolute right-0 bottom-0 w-[70%] h-[33.33%] bg-[#0F172A]" />
+                  </span>
+                  {hero.badge2}
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Headline */}
           <h1 className="animate-fade-up mt-4 font-display text-[56px] font-extrabold tracking-tight text-[#0F172A] leading-[1.08]">

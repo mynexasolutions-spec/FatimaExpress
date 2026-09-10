@@ -39,8 +39,8 @@ export default function PrivacyPolicyPage() {
           <div>
             <strong className="mb-1 block text-sm font-extrabold uppercase tracking-wide text-purple-700">Payment Security</strong>
             <p className="text-sm leading-relaxed text-slate-700">
-              We do not store your bank card numbers or account details. Bank transfer orders are settled directly with your
-              bank, and Cash on Delivery orders involve no online payment details at all.
+              We do not store your bank card or account details. All orders are Cash on Delivery, so no online payment
+              details are ever collected or processed by us.
             </p>
           </div>
         </div>

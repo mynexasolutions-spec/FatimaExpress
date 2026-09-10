@@ -22,7 +22,22 @@ export default function ImageUploader({ value, onChange, folder = "fatima-expres
     <div className="flex flex-wrap gap-3">
       <CldUploadWidget
         signatureEndpoint="/api/cloudinary/sign"
-        options={{ folder, multiple: false, sources: ["local", "url", "camera"] }}
+        options={{
+          folder,
+          multiple: false,
+          sources: ["local", "url", "camera"],
+          // This widget is for product/content photos only — without these,
+          // nothing stops someone from picking a video file and silently
+          // burning through Cloudinary storage/bandwidth credits.
+          resourceType: "image",
+          clientAllowedFormats: ["png", "jpg", "jpeg", "webp", "gif", "avif"],
+          maxFileSize: 10485760, // 10MB — matches Cloudinary's own free-plan image cap
+          // Cloudinary resizes/compresses the file once, at upload time,
+          // before storing it — caps storage/bandwidth without touching how
+          // images are delivered (next/image's optimizer still handles
+          // per-device sizing and format negotiation as before).
+          transformation: "w_2000,h_2000,c_limit,q_auto",
+        }}
         onSuccess={handleSuccess}
         onClose={restoreBodyScroll}
       >

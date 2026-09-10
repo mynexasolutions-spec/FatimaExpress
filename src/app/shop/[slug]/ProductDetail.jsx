@@ -12,6 +12,7 @@ import ReviewsList from "@/components/product/ReviewsList";
 import { useCart } from "@/context/CartContext";
 import { formatAED } from "@/lib/format";
 import { getActiveTier, getUnitPrice, sortedTiers } from "@/lib/bulkPricing";
+import { cldUrl } from "@/lib/cloudinary";
 
 const FALLBACK_SIZE = { label: "One size", price: 0 };
 
@@ -99,7 +100,7 @@ export default function ProductDetail({ product, related, reviews = [], existing
             {displayImage ? (
               <Image
                 key={displayImage}
-                src={displayImage}
+                src={cldUrl(displayImage)}
                 alt={product.name}
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -126,7 +127,7 @@ export default function ProductDetail({ product, related, reviews = [], existing
                       : "border-slate-200 opacity-70 hover:opacity-100 hover:border-slate-300"
                     }`}
                 >
-                  <Image src={img} alt={`${product.name} photo ${idx + 1}`} fill sizes="80px" className="object-cover" />
+                  <Image src={cldUrl(img)} alt={`${product.name} photo ${idx + 1}`} fill sizes="80px" className="object-cover" />
                 </button>
               ))}
             </div>
@@ -159,7 +160,7 @@ export default function ProductDetail({ product, related, reviews = [], existing
           </h1>
 
           {/* Rating & Reviews */}
-          {product.rating && (
+          {product.rating ? (
             <a href="#reviews" className="mt-3 inline-flex items-center gap-2.5 text-sm sm:text-base lg:text-lg font-semibold text-slate-600 transition hover:text-slate-900">
               <span className="flex items-center gap-1">
                 {Array.from({ length: 5 }).map((_, index) => (
@@ -174,6 +175,15 @@ export default function ProductDetail({ product, related, reviews = [], existing
               <span className="text-slate-500">
                 ({product.reviews} verified reviews)
               </span>
+            </a>
+          ) : (
+            <a href="#reviews" className="mt-3 inline-flex items-center gap-2.5 text-sm sm:text-base lg:text-lg font-semibold text-slate-400 transition hover:text-slate-600">
+              <span className="flex items-center gap-1">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <Star key={index} size={18} className="text-slate-200" />
+                ))}
+              </span>
+              <span>No reviews yet — be the first to review</span>
             </a>
           )}
 

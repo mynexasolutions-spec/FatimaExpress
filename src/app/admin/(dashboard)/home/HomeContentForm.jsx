@@ -13,6 +13,10 @@ const labelClass = "mb-1.5 block text-xs font-semibold text-slate-600";
 
 const BLANK_SLIDE = {
   eyebrow: "Celebrate Every Moment",
+  badge1: "Wholesale Pricing",
+  badge2: "Delivery Across UAE",
+  floatingBadgeTitle: "Wholesale Supply",
+  floatingBadgeSubtitle: "Across UAE",
   heading_line1: "Premium Balloons",
   heading_line2: "For Every Occasion",
   description: "",
@@ -347,6 +351,24 @@ export default function HomeContentForm({ content, products = [] }) {
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass}>Badge 1 (left pill)</label>
+                    <input
+                      value={heroSlides[activeSlide].badge1}
+                      onChange={(e) => updateSlide(activeSlide, "badge1", e.target.value)}
+                      className={inputClass}
+                      placeholder="Wholesale Pricing"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Badge 2 (right pill)</label>
+                    <input
+                      value={heroSlides[activeSlide].badge2}
+                      onChange={(e) => updateSlide(activeSlide, "badge2", e.target.value)}
+                      className={inputClass}
+                      placeholder="Delivery Across UAE"
+                    />
+                  </div>
                   <div className="sm:col-span-2">
                     <label className={labelClass}>Eyebrow text</label>
                     <input
@@ -396,6 +418,24 @@ export default function HomeContentForm({ content, products = [] }) {
                       onChange={(e) => updateSlide(activeSlide, "ctaLink", e.target.value)}
                       className={inputClass}
                       placeholder="/shop"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Floating badge title (bottom-right, desktop)</label>
+                    <input
+                      value={heroSlides[activeSlide].floatingBadgeTitle}
+                      onChange={(e) => updateSlide(activeSlide, "floatingBadgeTitle", e.target.value)}
+                      className={inputClass}
+                      placeholder="Wholesale Supply"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Floating badge subtitle</label>
+                    <input
+                      value={heroSlides[activeSlide].floatingBadgeSubtitle}
+                      onChange={(e) => updateSlide(activeSlide, "floatingBadgeSubtitle", e.target.value)}
+                      className={inputClass}
+                      placeholder="Across UAE"
                     />
                   </div>
                 </div>

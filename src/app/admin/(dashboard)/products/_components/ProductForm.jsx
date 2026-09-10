@@ -21,11 +21,24 @@ const inputClass =
 const labelClass = "mb-1.5 block text-xs font-semibold text-slate-600";
 const panelClass = "rounded-[1.75rem] border border-slate-100 bg-white p-6 shadow-xs";
 
-function ChipField({ name, value, onChange, options, placeholder, allowClear = true }) {
+function ChipField({ name, value, onChange, options, placeholder, allowClear = true, multiple = false }) {
   const chipClass = (active) =>
     `rounded-full border px-2.5 py-1 text-[11px] font-semibold transition ${
       active ? "border-brand-700 bg-brand-50 text-brand-800" : "border-slate-200 text-slate-500 hover:border-slate-300"
     }`;
+  const selectedValues = multiple ? value.split(",").map((v) => v.trim()).filter(Boolean) : [];
+  const isActive = (optValue) => (multiple ? selectedValues.includes(optValue) : value === optValue);
+  const toggleValue = (optValue) => {
+    if (!multiple) {
+      onChange(optValue);
+      return;
+    }
+    const next = selectedValues.includes(optValue)
+      ? selectedValues.filter((v) => v !== optValue)
+      : [...selectedValues, optValue];
+    onChange(next.join(", "));
+  };
+
   return (
     <>
       <input name={name} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className={inputClass} />
@@ -36,7 +49,7 @@ function ChipField({ name, value, onChange, options, placeholder, allowClear = t
           </button>
         )}
         {options.map((opt) => (
-          <button key={opt.value} type="button" onClick={() => onChange(opt.value)} className={chipClass(value === opt.value)}>
+          <button key={opt.value} type="button" onClick={() => toggleValue(opt.value)} className={chipClass(isActive(opt.value))}>
             {opt.label}
           </button>
         ))}
@@ -209,7 +222,11 @@ export default function ProductForm({ action, product, categories }) {
                     onChange={setTheme}
                     placeholder="e.g. birthday, wedding…"
                     options={themes.map((t) => ({ value: t.slug, label: t.name }))}
+                    multiple
                   />
+                  <p className="mt-1.5 text-[11px] text-slate-400">
+                    Pick more than one (or comma-separate them) to show this product under multiple theme filters.
+                  </p>
                 </div>
                 <div className="sm:col-span-2">
                   <label className={labelClass}>Short description (shown on product cards)</label>

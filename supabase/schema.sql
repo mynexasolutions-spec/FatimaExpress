@@ -192,7 +192,7 @@ create table if not exists public.products (
   is_active boolean not null default true,
   stock_quantity int not null default 100,
   variant_stock jsonb not null default '[]'::jsonb,
-  rating numeric(2, 1) default 4.8,
+  rating numeric(2, 1) not null default 0,
   reviews_count int not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -204,6 +204,11 @@ alter table public.products enable row level security;
 -- Empty array (the default) means the product isn't variant-tracked and
 -- stock_quantity is managed directly instead — see decrement_stock_on_order().
 alter table public.products add column if not exists variant_stock jsonb not null default '[]'::jsonb;
+
+-- Older rows were created with a hardcoded default rating (4.8) instead of 0,
+-- so products with no real reviews yet showed a fake star rating.
+alter table public.products alter column rating set default 0;
+update public.products set rating = 0 where reviews_count = 0 and rating <> 0;
 
 create policy "Anyone can view active products"
   on public.products for select
